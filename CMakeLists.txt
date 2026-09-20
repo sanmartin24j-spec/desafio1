@@ -7,4 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(desafio1
     main.cpp
+    tablero.h
+    tablero.cpp
 )
