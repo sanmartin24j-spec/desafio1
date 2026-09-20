@@ -2,24 +2,72 @@
 using namespace std;
 void escribirFicha(unsigned char *tablero, int byteActual, int desplazamiento, unsigned char ficha);
 unsigned char leerFicha(unsigned char *tablero, int byteActual, int desplazamiento);
+void encontraficha (int fila, int columna, int columnas, int *byteactual, int *desplazamiento );
+void llenarTablero(unsigned char *tablero,int filas, int columnas, int *semilla);
+void mostrarTablero(unsigned char *tablero, int filas,int columnas);
 
-
-int main()
+int main ()
 {
-    unsigned char tablero[2];
+    int byteactual;
+    int desplazamiento;
+    int fila;
+    int columna;
+    int semilla;
+    cout<<"Ingrese una semilla "<<endl;
+    cin>>semilla;
 
-    tablero[0] = 0b11101010;
-    tablero[1] = 0b10110010;
-    unsigned char ficha = 0b110;
-    int desplazamiento = 7;
-    escribirFicha(tablero, 0, desplazamiento, ficha);
+    int filas, columnas, cantidadfichas, totalbits, totalbytes;
+
+    cout<<"Ingrese filas"<<endl;
+    cin>>filas;
+    cout<<"Ingrese columnas"<<endl;
+    cin>>columnas;
+
+    cantidadfichas= filas* columnas;
+    totalbits=cantidadfichas*3;
+    totalbytes=(totalbits+7)/8;
+    unsigned char *tablero= new unsigned char [totalbytes];
+
+    for (int i=0;i<totalbytes;i++)
+    {
+        tablero[i]=0;
+    }
+    cout<<"Total de bytes: "<<totalbytes<<endl;
+
+    cout<<"Ingrese fila de la ficha"<<endl;
+    cin>>fila;
+    cout<<"Ingrese columna de la ficha"<<endl;
+    cin>>columna;
 
 
-    unsigned char lectura =leerFicha(tablero, 0, desplazamiento);
-    cout << "Ficha leida: "<< (int)lectura<< endl;
+    encontraficha(fila, columna, columnas, &byteactual, &desplazamiento);
+    int valorFicha;
+    cout << "Ingrese ficha entre 0 y 7" << endl;
+    cin >> valorFicha;
+
+    unsigned char ficha = valorFicha;
+
+    escribirFicha(tablero, byteactual, desplazamiento, ficha);
+
+    unsigned char lectura =leerFicha(tablero, byteactual, desplazamiento);
+
+    cout << "Ficha leida: " << (int)lectura << endl;
+
+
+    cout <<"Byte actual es el:  "<< byteactual << endl;
+    cout << "Desplazamiento es:  "<< desplazamiento << endl;
+    llenarTablero(tablero,filas,columnas,&semilla);
+    mostrarTablero(tablero, filas,columnas);
+
+    delete []tablero;
+    tablero= nullptr;
+
 
     return 0;
 }
+
+
+
 
 void escribirFicha(unsigned char *tablero, int byteActual, int desplazamiento, unsigned char ficha)
 {
@@ -68,6 +116,51 @@ unsigned char leerFicha(unsigned char *tablero, int byteActual, int desplazamien
         unsigned char partesegundobyte =tablero[byteActual + 1] & mascarasegundobyte;
 
         return parteprimerbyte |(partesegundobyte << bitsprimerbyte); }
+}
+void encontraficha (int fila, int columna, int columnas, int *byteactual, int *desplazamiento )
+{
+    int indice=fila*columnas+columna;
+    int bitini= indice*3;
+    *byteactual=bitini/8;
+    *desplazamiento=bitini%8;
+
+}
+
+void llenarTablero(unsigned char *tablero,int filas, int columnas, int *semilla)
+{
+    int byteactual;
+    int desplazamiento;
+
+
+    for (int fila = 0; fila < filas; fila++)
+    {
+        for (int columna = 0; columna < columnas; columna++)
+        {
+        encontraficha(fila, columna, columnas, &byteactual, &desplazamiento);
+        *semilla=(*semilla*4+3)%97;
+        int ficha = (*semilla) % 6;
+        escribirFicha(tablero, byteactual, desplazamiento, ficha);
+        }
+    }
+}
+
+void mostrarTablero(unsigned char *tablero, int filas,int columnas)
+{
+    int byteactual;
+    int desplazamiento;
+    int resultado;
+    for (int fila = 0; fila < filas; fila++)
+    {
+        for (int columna = 0; columna < columnas; columna++)
+        {
+        encontraficha(fila, columna, columnas, &byteactual, &desplazamiento);
+
+        resultado =leerFicha(tablero, byteactual, desplazamiento);
+        cout<<resultado<< " ";
+        }
+        cout << endl;
+    }
 
 
 }
+
